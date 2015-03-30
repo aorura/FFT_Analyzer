@@ -8,6 +8,7 @@ import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -18,6 +19,9 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ca.uol.aig.fftpack.RealDoubleFFT;
 
@@ -35,10 +39,16 @@ public class SoundRecordAndAnalysisActivity extends Activity {
 
     static SoundRecordAndAnalysisActivity mainActivity;
 
-    private WebView mWebView;
+    private ObservableWebView mWebView;
     private EditText urlField;
     private final String initWebPage = "http://www.naver.com";
+    private final int THRESHOLD_OF_ABOVE = 1500;
+    private final int THRESHOLD_OF_BELOW = 100;
 
+    TextView debugLabel, debugRedLabel;
+
+    private TimerTask mTask = null;
+    private Timer mTimer = null;
     /**
      * Called when the activity is first created.
      */
@@ -47,12 +57,49 @@ public class SoundRecordAndAnalysisActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        mWebView = (WebView) findViewById(R.id.webView);
+        mWebView = (ObservableWebView) findViewById(R.id.webView);
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         mWebView.setWebViewClient(new MyWebViewClient());
         mWebView.loadUrl(initWebPage);
         mWebView.requestFocus();
+        mWebView.setOnScrollChangedCallback(new ObservableWebView.OnScrollChangedCallback() {
+            public void onScroll(int l, int t, int oldl, int oldt) {
+                int height = (int) Math.floor(mWebView.getContentHeight() * mWebView.getScale());
+                int webViewHeight = mWebView.getMeasuredHeight();
+                if(mWebView.getScrollY() + webViewHeight >= height){
+                    mWebView.post(new Runnable() {
+                        public void run() {
+                            if (mTimer == null) {
+                                Toast toast = Toast.makeText(getApplicationContext(), "Bottom : Go To Top Page",  Toast.LENGTH_SHORT);
+                                toast.setGravity(Gravity.CENTER, 0, 0);
+                                toast.show();
+                                mTask = new TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        mWebView.post(new Runnable() {
+                                            public void run() {
+                                                Toast toast = Toast.makeText(getApplicationContext(), "TOP OF PAGE",  Toast.LENGTH_SHORT);
+                                                toast.setGravity(Gravity.TOP, 0, 0);
+                                                toast.show();
+                                                mWebView.scrollTo(0, 0);
+                                                mTimer.cancel();
+                                                mTimer = null;
+                                            }
+                                        });
+                                    }
+                                };
+                                mTimer = new Timer();
+                                mTimer.schedule(mTask, 2000);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+        debugLabel = (TextView) findViewById(R.id.debugLabel);
+        debugRedLabel = (TextView) findViewById(R.id.debugRedLabel);
 
         urlField = (EditText) findViewById(R.id.editText);
         urlField.setText(initWebPage);
@@ -182,13 +229,14 @@ public class SoundRecordAndAnalysisActivity extends Activity {
 
         protected void onProgressUpdate(double[]... toTransform) {
             Log.e("RecordingProgress", "Displaying in progress");
-            double lowPart = 0;
-            double highPart = 0;
+            double lowPart = 0.0;
+            double highPart = 0.0;
 
             for (int i = 0; i < toTransform[0].length; i++) {
                 double downy = toTransform[0][i] * 10;
+                Log.d("sung", "downy:  " + downy);
 
-                if (i < toTransform[0].length / 3) {
+                if (i < (toTransform[0].length / 12 * 5)) {
                     lowPart += Math.abs(downy);
                 } else {
                     highPart += Math.abs(downy);
@@ -197,20 +245,28 @@ public class SoundRecordAndAnalysisActivity extends Activity {
 
             Double ratio = highPart > 0 ? lowPart / highPart : 0.0;
 
-            if (lowPart > 1000 && ratio > 17) {
-                blowScroll(100);
-            } else if (lowPart > 1000 && ratio > 14) {
-                blowScroll(50);
-            } else if (lowPart > 1000 && ratio > 10) {
-                blowScroll(25);
-            }
+            String logOut = String.format("LowPart: %07.1f HighPart: %07.1f Ratio: %05.1f", lowPart, highPart, ratio);
+            Log.d("park", logOut);
 
-            Log.d("park", "lowPart: " + lowPart + " highPart: " + highPart + " ratio: " + ratio);
+            if (lowPart > THRESHOLD_OF_ABOVE && highPart < THRESHOLD_OF_BELOW) {
+                debugLabel.setText(logOut);
+                if (ratio > 20) {
+                    blowScroll(150);
+                } else if (ratio > 17) {
+                    blowScroll(100);
+                } else if (ratio > 14) {
+                    blowScroll(50);
+                } else if (ratio > 10) {
+                    blowScroll(25);
+                }
+            }  else {
+                debugRedLabel.setText(logOut);
+            }
         }
 
         protected void blowScroll(int velocity) {
-            int x = mWebView.getScrollX();
-            int y = mWebView.getScrollY();
+//            int x = mWebView.getScrollX();
+//            int y = mWebView.getScrollY();
 
             mWebView.scrollBy(0, velocity);
         }
@@ -270,6 +326,9 @@ public class SoundRecordAndAnalysisActivity extends Activity {
     protected void onPause() {
         Log.d("park", "onPause");
         started = false;
+        if (recordTask != null) {
+            recordTask.cancel(true);
+        }
         recordTask.cancel(true);
         recordTask = null;
 
@@ -290,6 +349,11 @@ public class SoundRecordAndAnalysisActivity extends Activity {
         super.onDestroy();
         if (recordTask != null) {
             recordTask.cancel(true);
+        }
+
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
         }
     }
 }
