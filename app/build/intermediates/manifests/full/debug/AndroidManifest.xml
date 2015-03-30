@@ -19,12 +19,12 @@
         android:smallScreens="true" />
 
     <application
-        android:debuggable="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
         <activity
             android:name="com.somitsolutions.android.spectrumanalyzer.SoundRecordAndAnalysisActivity"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

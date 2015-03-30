@@ -26,12 +26,12 @@ application
 ADDED from AndroidManifest.xml:9:5
 	android:label
 		ADDED from AndroidManifest.xml:11:9
-	android:debuggable
-		ADDED from AndroidManifest.xml:12:9
 	android:icon
 		ADDED from AndroidManifest.xml:10:9
 activity#com.somitsolutions.android.spectrumanalyzer.SoundRecordAndAnalysisActivity
-ADDED from AndroidManifest.xml:14:9
+ADDED from AndroidManifest.xml:13:9
+	android:screenOrientation
+		ADDED from AndroidManifest.xml:14:13
 	android:label
 		ADDED from AndroidManifest.xml:15:13
 	android:theme

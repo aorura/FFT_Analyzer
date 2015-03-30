@@ -10,6 +10,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#D8D8D8"
         android:weightSum="1">
 
         <EditText
@@ -34,5 +35,14 @@
         android:layout_height="match_parent"
         android:id="@+id/webView"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="0.8" />
+        android:layout_weight="0.6" />
+
+    <TextView
+        android:id="@+id/debugLabel"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:gravity="center_horizontal"
+        android:layout_weight="0.2"
+        android:textColor="#000000"
+        android:background="#D8D8D8"/>
 </LinearLayout>

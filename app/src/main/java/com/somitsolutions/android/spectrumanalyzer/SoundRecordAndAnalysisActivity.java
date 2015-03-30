@@ -38,6 +38,10 @@ public class SoundRecordAndAnalysisActivity extends Activity {
     private WebView mWebView;
     private EditText urlField;
     private final String initWebPage = "http://www.naver.com";
+    private final int THRESHOLD_OF_ABOVE = 1500;
+    private final int THRESHOLD_OF_BELOW = 150;
+
+    TextView debugLabel;
 
     /**
      * Called when the activity is first created.
@@ -53,6 +57,8 @@ public class SoundRecordAndAnalysisActivity extends Activity {
         mWebView.setWebViewClient(new MyWebViewClient());
         mWebView.loadUrl(initWebPage);
         mWebView.requestFocus();
+
+        debugLabel = (TextView) findViewById(R.id.debugLabel);
 
         urlField = (EditText) findViewById(R.id.editText);
         urlField.setText(initWebPage);
@@ -182,11 +188,12 @@ public class SoundRecordAndAnalysisActivity extends Activity {
 
         protected void onProgressUpdate(double[]... toTransform) {
             Log.e("RecordingProgress", "Displaying in progress");
-            double lowPart = 0;
-            double highPart = 0;
+            double lowPart = 0.0;
+            double highPart = 0.0;
 
             for (int i = 0; i < toTransform[0].length; i++) {
                 double downy = toTransform[0][i] * 10;
+                Log.d("sung", "downy:  " + downy);
 
                 if (i < toTransform[0].length / 3) {
                     lowPart += Math.abs(downy);
@@ -197,15 +204,19 @@ public class SoundRecordAndAnalysisActivity extends Activity {
 
             Double ratio = highPart > 0 ? lowPart / highPart : 0.0;
 
-            if (lowPart > 1000 && ratio > 17) {
-                blowScroll(100);
-            } else if (lowPart > 1000 && ratio > 14) {
-                blowScroll(50);
-            } else if (lowPart > 1000 && ratio > 10) {
-                blowScroll(25);
-            }
+            String logOut = String.format("LowPart: %07.1f HighPart: %07.1f Ratio: %05.1f", lowPart, highPart, ratio);
+            Log.d("park", logOut);
 
-            Log.d("park", "lowPart: " + lowPart + " highPart: " + highPart + " ratio: " + ratio);
+            if (lowPart > THRESHOLD_OF_ABOVE && highPart < THRESHOLD_OF_BELOW) {
+                debugLabel.setText(logOut);
+                if (ratio > 17) {
+                    blowScroll(100);
+                } else if (ratio > 14) {
+                    blowScroll(50);
+                } else if (ratio > 10) {
+                    blowScroll(25);
+                }
+            }
         }
 
         protected void blowScroll(int velocity) {
