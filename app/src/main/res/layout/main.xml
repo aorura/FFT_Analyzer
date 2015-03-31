@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#D8D8D8"
+        android:gravity="center_vertical"
         android:weightSum="1">
 
         <EditText
@@ -19,6 +20,7 @@
             android:id="@+id/editText"
             android:inputType="textEmailAddress"
             android:singleLine="true"
+            android:selectAllOnFocus="true"
             android:layout_weight="0.9" />
 
         <Button

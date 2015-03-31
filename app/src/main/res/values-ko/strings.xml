@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World!</string>
+    <string name="app_name">보이스 스크롤</string>
+    <string name="go_to_top">맨 위로 이동</string>
+    <string name="top_page">맨 위 페이지</string>
+    <string name="invalid_url">잘못된 URL 입니다.</string>
+    <string name="empty_url">빈 URL 입니다.</string>
+    <string name="blow_too_strong">바람이 너무 셉니다!</string>
+</resources>

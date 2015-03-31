@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="hello">Hello World!</string>
     <string name="app_name">Voice Scroller</string>
-
+    <string name="go_to_top">Bottom : Go To Top Page</string>
+    <string name="top_page">TOP OF PAGE</string>
+    <string name="invalid_url">Invalid Url</string>
+    <string name="empty_url">Empty Url Field!</string>
+    <string name="blow_too_strong">Blowing too strong!</string>
 </resources>

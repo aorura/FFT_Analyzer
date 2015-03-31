@@ -43,7 +43,11 @@ public class SoundRecordAndAnalysisActivity extends Activity {
     private EditText urlField;
     private final String initWebPage = "http://www.naver.com";
     private final int THRESHOLD_OF_ABOVE = 1500;
-    private final int THRESHOLD_OF_BELOW = 100;
+    private final int THRESHOLD_OF_BELOW = 110;
+    private final int THRESHOLD_OF_COUNT = 50;
+    private int failCnt  = 0;
+    private long startTime = 0;
+    private final int INTERVAL = 3000;
 
     TextView debugLabel, debugRedLabel;
 
@@ -71,7 +75,7 @@ public class SoundRecordAndAnalysisActivity extends Activity {
                     mWebView.post(new Runnable() {
                         public void run() {
                             if (mTimer == null) {
-                                Toast toast = Toast.makeText(getApplicationContext(), "Bottom : Go To Top Page",  Toast.LENGTH_SHORT);
+                                Toast toast = Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.go_to_top),  Toast.LENGTH_SHORT);
                                 toast.setGravity(Gravity.CENTER, 0, 0);
                                 toast.show();
                                 mTask = new TimerTask() {
@@ -79,7 +83,7 @@ public class SoundRecordAndAnalysisActivity extends Activity {
                                     public void run() {
                                         mWebView.post(new Runnable() {
                                             public void run() {
-                                                Toast toast = Toast.makeText(getApplicationContext(), "TOP OF PAGE",  Toast.LENGTH_SHORT);
+                                                Toast toast = Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.top_page),  Toast.LENGTH_SHORT);
                                                 toast.setGravity(Gravity.TOP, 0, 0);
                                                 toast.show();
                                                 mWebView.scrollTo(0, 0);
@@ -118,6 +122,15 @@ public class SoundRecordAndAnalysisActivity extends Activity {
                 return false;
             }
         });
+//        urlField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//            public void onFocusChange(View v, boolean hasFocus)  {
+//                Log.d("sung", "hasFocus: " + hasFocus);
+//                Toast.makeText(getApplicationContext(), "Focus: " + hasFocus, Toast.LENGTH_SHORT).show();
+//                if (hasFocus) {
+//                    urlField.selectAll();
+//                }
+//            }
+//        });
     }
 
     private class MyWebViewClient extends WebViewClient {
@@ -162,14 +175,14 @@ public class SoundRecordAndAnalysisActivity extends Activity {
             url = urlAddr.toString();
 
             if (!URLUtil.isValidUrl(url)) {
-                Toast.makeText(getApplicationContext(), "Invalid Url", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.invalid_url), Toast.LENGTH_SHORT).show();
                 urlField.setText(prefix);
                 return;
             }
             mWebView.loadUrl(url);
             urlField.setText(url);
         } else {
-            Toast.makeText(getApplicationContext(), "Empty Url Field!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.empty_url), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -251,7 +264,7 @@ public class SoundRecordAndAnalysisActivity extends Activity {
             if (lowPart > THRESHOLD_OF_ABOVE && highPart < THRESHOLD_OF_BELOW) {
                 debugLabel.setText(logOut);
                 if (ratio > 20) {
-                    blowScroll(150);
+                    blowScroll(120);
                 } else if (ratio > 17) {
                     blowScroll(100);
                 } else if (ratio > 14) {
@@ -259,7 +272,16 @@ public class SoundRecordAndAnalysisActivity extends Activity {
                 } else if (ratio > 10) {
                     blowScroll(25);
                 }
-            }  else {
+                failCnt = 0;
+            }  else if (lowPart > THRESHOLD_OF_ABOVE  && highPart > THRESHOLD_OF_BELOW && failCnt++ > THRESHOLD_OF_COUNT) {
+                long elapsedTime = System.currentTimeMillis() - startTime;
+
+                if (elapsedTime  > INTERVAL) {
+                    Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.blow_too_strong), Toast.LENGTH_SHORT).show();
+                    startTime = System.currentTimeMillis();
+                }
+                failCnt = 0;
+            } else {
                 debugRedLabel.setText(logOut);
             }
         }
