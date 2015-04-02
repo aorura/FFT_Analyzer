@@ -211,9 +211,11 @@ public class SoundRecordAndAnalysisActivity extends Activity {
                     channelConfiguration, audioEncoding, bufferSize);
 
             NoiseSuppressor noiseSuppressor = NoiseSuppressor.create(audioRecord.getAudioSessionId());
-            noiseSuppressor.setEnabled(true);
-            Log.d("chul", "noise get: " + noiseSuppressor.getEnabled());
-            Log.d("chul", "noise is: " + noiseSuppressor.isAvailable());
+            if (noiseSuppressor != null) {
+                noiseSuppressor.setEnabled(true);
+                Log.d("chul", "noise get: " + noiseSuppressor.getEnabled());
+                Log.d("chul", "noise is: " + noiseSuppressor.isAvailable());
+            }
 
             int bufferReadResult;
             short[] buffer = new short[blockSize];
@@ -224,6 +226,7 @@ public class SoundRecordAndAnalysisActivity extends Activity {
                 Log.e("Recording failed", e.toString());
 
             }
+            
             while (started) {
                 bufferReadResult = audioRecord.read(buffer, 0, blockSize);
 
