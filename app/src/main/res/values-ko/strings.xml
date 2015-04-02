@@ -2,7 +2,7 @@
 <resources>
     <string name="hello">Hello World!</string>
     <string name="app_name">보이스 스크롤</string>
-    <string name="go_to_top">맨 위로 이동</string>
+    <string name="go_to_top">맨 끝 입니다. 위로 이동</string>
     <string name="top_page">맨 위 페이지</string>
     <string name="invalid_url">잘못된 URL 입니다.</string>
     <string name="empty_url">빈 URL 입니다.</string>

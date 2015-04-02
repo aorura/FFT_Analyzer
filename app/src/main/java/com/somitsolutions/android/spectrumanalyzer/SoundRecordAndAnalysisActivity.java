@@ -5,12 +5,14 @@ import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.media.audiofx.NoiseSuppressor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.URLUtil;
 import android.webkit.WebSettings;
@@ -43,7 +45,7 @@ public class SoundRecordAndAnalysisActivity extends Activity {
     private EditText urlField;
     private final String initWebPage = "http://www.naver.com";
     private final int THRESHOLD_OF_ABOVE = 1500;
-    private final int THRESHOLD_OF_BELOW = 110;
+    private final int THRESHOLD_OF_BELOW = 100;
     private final int THRESHOLD_OF_COUNT = 50;
     private int failCnt  = 0;
     private long startTime = 0;
@@ -60,6 +62,8 @@ public class SoundRecordAndAnalysisActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         mWebView = (ObservableWebView) findViewById(R.id.webView);
         WebSettings webSettings = mWebView.getSettings();
@@ -205,6 +209,12 @@ public class SoundRecordAndAnalysisActivity extends Activity {
             audioRecord = new AudioRecord(
                     MediaRecorder.AudioSource.DEFAULT, frequency,
                     channelConfiguration, audioEncoding, bufferSize);
+
+            NoiseSuppressor noiseSuppressor = NoiseSuppressor.create(audioRecord.getAudioSessionId());
+            noiseSuppressor.setEnabled(true);
+            Log.d("chul", "noise get: " + noiseSuppressor.getEnabled());
+            Log.d("chul", "noise is: " + noiseSuppressor.isAvailable());
+
             int bufferReadResult;
             short[] buffer = new short[blockSize];
             double[] toTransform = new double[blockSize];
@@ -350,9 +360,8 @@ public class SoundRecordAndAnalysisActivity extends Activity {
         started = false;
         if (recordTask != null) {
             recordTask.cancel(true);
+            recordTask = null;
         }
-        recordTask.cancel(true);
-        recordTask = null;
 
         super.onPause();
     }
